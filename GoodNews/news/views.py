@@ -6,11 +6,12 @@ from django.core.mail import send_mail
 from django.shortcuts import render, redirect
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.views.generic.edit import CreateView, FormMixin
+
 from .forms import PostForm, CategoryForm
 from .models import Post, Category, Author  # импорт нашей модели
 from .filters import PostFilter  # импорт нашего фильтра
 from .signals import check_post_limits
-
+from .tasks import celery_notify_subscribers
 
 class PostList(ListView):
     # Указываем модель, объекты которой мы будем выводить
@@ -122,6 +123,7 @@ class PostCreateView(CreateView, LoginRequiredMixin, PermissionRequiredMixin):
         if check_post_limits(sender=Post, instance=new_post, **kwargs) < 3:
             new_post.save()
             new_post.categories.add(request.POST.get('categories'))
+            celery_notify_subscribers.delay(new_post.id)
 
         return redirect('news')
 
