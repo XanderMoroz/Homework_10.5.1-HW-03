@@ -7,8 +7,6 @@ from .models import Post, Category
 class PostForm(ModelForm):
     #check_box = BooleanField(label='Confirm changes')
 
-
-
     class Meta:
         """
         В класс мета, как обычно, надо написать модель, по которой будет строиться форма и нужные нам поля.
